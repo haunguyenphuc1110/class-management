@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -207,8 +206,6 @@ function SessionTracker({
 
 // ---- Page ----
 export default function SubscriptionsPage() {
-  const router = useRouter();
-
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -270,10 +267,9 @@ export default function SubscriptionsPage() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Failed to create subscription"); return; }
-      setSubscriptions((prev) => [data, ...prev]);
       setForm({ studentId: "", plan: "Monthly", startDate: "", endDate: "", amount: "", totalSessions: "4", notes: "" });
       setShowForm(false);
-      router.refresh();
+      await fetchData();
     } catch {
       setError("An unexpected error occurred");
     } finally {
@@ -290,9 +286,8 @@ export default function SubscriptionsPage() {
         body: JSON.stringify({ status: newStatus }),
       });
       if (res.ok) {
-        const updated = await res.json();
-        setSubscriptions((prev) => prev.map((s) => (s.id === id ? { ...updated, sessions: s.sessions } : s)));
-        router.refresh();
+        // Refetch so stats, sessions, and all fields stay in sync with the server
+        await fetchData();
       }
     } finally {
       setUpdatingId(null);
