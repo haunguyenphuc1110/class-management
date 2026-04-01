@@ -16,7 +16,21 @@ async function getData() {
     prisma.teacher.findMany({ orderBy: { name: "asc" } }),
     prisma.student.findMany({ orderBy: { name: "asc" } }),
   ]);
-  return { classes, teachers, students };
+
+  // Serialize Date fields to ISO strings for the client component
+  const serializedClasses = classes.map((c) => ({
+    ...c,
+    startDate: c.startDate?.toISOString() ?? null,
+    endDate: c.endDate?.toISOString() ?? null,
+    createdAt: c.createdAt.toISOString(),
+    updatedAt: c.updatedAt.toISOString(),
+    enrollments: c.enrollments.map((e) => ({
+      ...e,
+      enrolledAt: e.enrolledAt.toISOString(),
+    })),
+  }));
+
+  return { classes: serializedClasses, teachers, students };
 }
 
 export default async function ClassesPage() {

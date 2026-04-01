@@ -28,6 +28,7 @@ model Student {
   parent        Parent         @relation(fields: [parentId], references: [id])
   enrollments   Enrollment[]
   subscriptions Subscription[]
+  sessions      Session[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 }
@@ -55,7 +56,10 @@ model Class {
   room        String?
   maxStudents Int          @default(20)
   color       String?      @default("blue")
+  startDate   DateTime?
+  endDate     DateTime?
   enrollments Enrollment[]
+  sessions    Session[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
@@ -73,15 +77,30 @@ model Enrollment {
 }
 
 model Subscription {
-  id        String   @id @default(cuid())
-  studentId String
-  student   Student  @relation(fields: [studentId], references: [id])
-  plan      String
-  status    String   @default("active")
-  startDate DateTime
-  endDate   DateTime
-  amount    Float
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String    @id @default(cuid())
+  studentId     String
+  student       Student   @relation(fields: [studentId], references: [id])
+  plan          String
+  status        String    @default("active")
+  startDate     DateTime
+  endDate       DateTime
+  amount        Float
+  totalSessions Int       @default(0)
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+}
+
+model Session {
+  id             String       @id @default(cuid())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+  studentId      String
+  student        Student      @relation(fields: [studentId], references: [id])
+  classId        String?
+  class          Class?       @relation(fields: [classId], references: [id])
+  date           DateTime     @default(now())
+  notes          String?
+  createdAt      DateTime     @default(now())
 }

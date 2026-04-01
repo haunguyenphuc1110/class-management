@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ import {
   UserPlus,
   Mail,
   Phone,
+  CheckSquare,
 } from "lucide-react";
 
 // ---- Types ----
@@ -55,7 +56,17 @@ interface ClassItem {
   room: string | null;
   maxStudents: number;
   color: string | null;
+  startDate: string | null;
+  endDate: string | null;
   enrollments: Enrollment[];
+}
+
+function isExpired(cls: ClassItem): boolean {
+  return !!cls.endDate && new Date(cls.endDate) < new Date();
+}
+
+function isFull(cls: ClassItem): boolean {
+  return cls.enrollments.length >= cls.maxStudents;
 }
 
 interface ClassesClientProps {
@@ -139,7 +150,21 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
   const [showNewClass, setShowNewClass] = useState(false);
   const [showNewTeacher, setShowNewTeacher] = useState(false);
   const [selectedClass, setSelectedClass] = useState<ClassItem | null>(null);
+  const detailPanelRef = useRef<HTMLDivElement>(null);
   const [showAssign, setShowAssign] = useState(false);
+
+  // Attendance state
+  const [showAttendance, setShowAttendance] = useState(false);
+  const [attendanceIds, setAttendanceIds] = useState<string[]>([]);
+  const [attendanceSubs, setAttendanceSubs] = useState<Record<string, { id: string; totalSessions: number; sessionsUsed: number } | null>>({});
+  const [submittingAttendance, setSubmittingAttendance] = useState(false);
+  const [attendanceResult, setAttendanceResult] = useState<Record<string, "ok" | "error" | "no-sub">>({});
+
+  useEffect(() => {
+    if (selectedClass) {
+      detailPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [selectedClass]);
 
   // Loading / error
   const [loading, setLoading] = useState(false);
@@ -157,6 +182,8 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
     room: "",
     maxStudents: "20",
     color: "blue",
+    startDate: "",
+    endDate: "",
   });
 
   // New teacher form
@@ -170,6 +197,7 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
   // Assign students state
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [assigning, setAssigning] = useState(false);
+  const [assignErrors, setAssignErrors] = useState<Record<string, string>>({});
 
   // ---- Handlers: classes ----
   const handleCreateClass = async (e: React.FormEvent) => {
@@ -202,6 +230,8 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
         room: "",
         maxStudents: "20",
         color: "blue",
+        startDate: "",
+        endDate: "",
       });
       setShowNewClass(false);
       router.refresh();
@@ -219,8 +249,11 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
       const res = await fetch(`/api/classes/${id}`, { method: "DELETE" });
       if (res.ok) {
         setClasses((prev) => prev.filter((c) => c.id !== id));
-        if (selectedClass?.id === id) setSelectedClass(null);
+        setSelectedClass(null);
         router.refresh();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to delete class");
       }
     } finally {
       setDeletingId(null);
@@ -258,6 +291,7 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
   const openAssign = (cls: ClassItem) => {
     setSelectedClass(cls);
     setSelectedStudentIds([]);
+    setAssignErrors({});
     setShowAssign(true);
   };
 
@@ -273,47 +307,50 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
   const handleAssign = async () => {
     if (!selectedClass || selectedStudentIds.length === 0) return;
     setAssigning(true);
+    setAssignErrors({});
     try {
       const results = await Promise.all(
-        selectedStudentIds.map((studentId) =>
-          fetch("/api/enrollments", {
+        selectedStudentIds.map(async (studentId) => {
+          const res = await fetch("/api/enrollments", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ studentId, classId: selectedClass.id }),
-          }).then((r) => r.json())
-        )
-      );
-      // Update the class in state with new enrollments
-      setClasses((prev) =>
-        prev.map((c) => {
-          if (c.id !== selectedClass.id) return c;
-          const newEnrollments = results
-            .filter((r) => r.id)
-            .map((r) => ({
-              id: r.id,
-              studentId: r.studentId,
-              student: r.student,
-              status: r.status,
-            }));
-          return { ...c, enrollments: [...c.enrollments, ...newEnrollments] };
+          });
+          const data = await res.json();
+          return { studentId, ok: res.ok, data };
         })
       );
-      // Update selectedClass too
-      setSelectedClass((prev) => {
-        if (!prev) return prev;
-        const newEnrollments = results
-          .filter((r) => r.id)
-          .map((r) => ({
-            id: r.id,
-            studentId: r.studentId,
-            student: r.student,
-            status: r.status,
-          }));
-        return { ...prev, enrollments: [...prev.enrollments, ...newEnrollments] };
+
+      const errors: Record<string, string> = {};
+      const succeeded = results.filter((r) => {
+        if (!r.ok) { errors[r.studentId] = r.data.error; return false; }
+        return true;
       });
-      setSelectedStudentIds([]);
-      setShowAssign(false);
-      router.refresh();
+
+      if (Object.keys(errors).length > 0) setAssignErrors(errors);
+
+      if (succeeded.length > 0) {
+        const newEnrollments = succeeded.map((r) => ({
+          id: r.data.id,
+          studentId: r.data.studentId,
+          student: r.data.student,
+          status: r.data.status,
+        }));
+        setClasses((prev) =>
+          prev.map((c) =>
+            c.id === selectedClass.id
+              ? { ...c, enrollments: [...c.enrollments, ...newEnrollments] }
+              : c
+          )
+        );
+        setSelectedClass((prev) =>
+          prev ? { ...prev, enrollments: [...prev.enrollments, ...newEnrollments] } : prev
+        );
+        setSelectedStudentIds((prev) => prev.filter((id) => errors[id]));
+        router.refresh();
+      }
+
+      if (Object.keys(errors).length === 0) setShowAssign(false);
     } finally {
       setAssigning(false);
     }
@@ -337,6 +374,62 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
     } catch {
       // silent
     }
+  };
+
+  // ---- Handlers: attendance ----
+  const openAttendance = async (cls: ClassItem) => {
+    setSelectedClass(cls);
+    setAttendanceIds([]);
+    setAttendanceResult({});
+    setShowAttendance(true);
+    // Fetch each enrolled student's active subscription
+    const subsMap: Record<string, { id: string; totalSessions: number; sessionsUsed: number } | null> = {};
+    await Promise.all(
+      cls.enrollments.map(async (enr) => {
+        try {
+          const res = await fetch(`/api/subscriptions?studentId=${enr.studentId}`);
+          const subs = await res.json();
+          const active = Array.isArray(subs) ? subs.find((s: { status: string }) => s.status === "active") : null;
+          subsMap[enr.studentId] = active
+            ? { id: active.id, totalSessions: active.totalSessions, sessionsUsed: active.sessions?.length ?? 0 }
+            : null;
+        } catch {
+          subsMap[enr.studentId] = null;
+        }
+      })
+    );
+    setAttendanceSubs(subsMap);
+  };
+
+  const handleSubmitAttendance = async () => {
+    if (!selectedClass || attendanceIds.length === 0) return;
+    setSubmittingAttendance(true);
+    const result: Record<string, "ok" | "error" | "no-sub"> = {};
+    await Promise.all(
+      attendanceIds.map(async (studentId) => {
+        const sub = attendanceSubs[studentId];
+        if (!sub) { result[studentId] = "no-sub"; return; }
+        try {
+          const res = await fetch("/api/sessions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ subscriptionId: sub.id, classId: selectedClass.id }),
+          });
+          result[studentId] = res.ok ? "ok" : "error";
+          if (res.ok) {
+            setAttendanceSubs((prev) => ({
+              ...prev,
+              [studentId]: prev[studentId] ? { ...prev[studentId]!, sessionsUsed: prev[studentId]!.sessionsUsed + 1 } : null,
+            }));
+          }
+        } catch {
+          result[studentId] = "error";
+        }
+      })
+    );
+    setAttendanceResult(result);
+    setAttendanceIds([]);
+    setSubmittingAttendance(false);
   };
 
   // ---- Weekly schedule rendering ----
@@ -367,7 +460,7 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
           </p>
         </div>
         <Button
-          onClick={() => { setError(""); setShowNewClass(true); }}
+          onClick={() => { setError(""); setSelectedClass(null); setShowNewClass(true); }}
           className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white border-0"
         >
           <Plus className="size-4" />
@@ -394,7 +487,7 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
                 Create your first class to see the weekly schedule.
               </p>
               <Button
-                onClick={() => { setError(""); setShowNewClass(true); }}
+                onClick={() => { setError(""); setSelectedClass(null); setShowNewClass(true); }}
                 className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white border-0"
               >
                 <Plus className="size-4" /> New Class
@@ -442,11 +535,15 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
                     {/* Class blocks */}
                     {classesByDay[day].map((cls) => {
                       const colorCls = getColorClasses(cls.color);
+                      const expired = isExpired(cls);
+                      const full = isFull(cls);
                       return (
                         <button
                           key={cls.id}
                           onClick={() => setSelectedClass(cls)}
-                          className={`absolute left-0.5 right-0.5 rounded-md border px-1.5 py-1 text-left cursor-pointer hover:shadow-md transition-shadow overflow-hidden ${colorCls.bg} ${colorCls.border} ${colorCls.text}`}
+                          className={`absolute left-0.5 right-0.5 rounded-md border px-1.5 py-1 text-left cursor-pointer hover:shadow-md transition-shadow overflow-hidden ${
+                            expired ? "bg-gray-100 border-gray-200 text-gray-400 opacity-60" : `${colorCls.bg} ${colorCls.border} ${colorCls.text}`
+                          }`}
                           style={getBlockStyle(cls)}
                         >
                           <p className="text-xs font-semibold leading-tight truncate">{cls.name}</p>
@@ -456,6 +553,12 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
                           <p className="text-[10px] leading-tight opacity-75 truncate">
                             {cls.teacher.name}
                           </p>
+                          {expired && (
+                            <p className="text-[10px] font-semibold leading-tight text-gray-500">Expired</p>
+                          )}
+                          {!expired && full && (
+                            <p className="text-[10px] font-semibold leading-tight">Full</p>
+                          )}
                         </button>
                       );
                     })}
@@ -467,104 +570,135 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
         </CardContent>
       </Card>
 
-      {/* ---- Class Detail Panel ---- */}
-      {selectedClass && (
-        <Card className="border-indigo-200">
-          <CardHeader className="pb-4">
-            <div className="flex items-start justify-between gap-4">
+      {/* ---- Class Detail Dialog ---- */}
+      <Dialog open={!!selectedClass} onClose={() => setSelectedClass(null)} className="max-w-2xl">
+        {selectedClass && (
+          <>
+            <DialogHeader
+              title={selectedClass.name}
+              description={selectedClass.subject ?? undefined}
+              onClose={() => setSelectedClass(null)}
+            />
+            <DialogBody className="space-y-5">
+              {/* Meta info */}
+              <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <CalendarDays className="size-4 text-indigo-500" />
+                  {DAY_LABELS[selectedClass.dayOfWeek]}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Clock className="size-4 text-indigo-500" />
+                  {formatTime(selectedClass.startTime)} – {formatTime(selectedClass.endTime)}
+                </span>
+                {selectedClass.room && (
+                  <span className="flex items-center gap-1.5">
+                    <MapPin className="size-4 text-indigo-500" />
+                    {selectedClass.room}
+                  </span>
+                )}
+                <span className="flex items-center gap-1.5">
+                  <Users className="size-4 text-indigo-500" />
+                  {selectedClass.enrollments.length} / {selectedClass.maxStudents} students
+                </span>
+                {selectedClass.startDate && (
+                  <span className="flex items-center gap-1.5">
+                    From {new Date(selectedClass.startDate).toLocaleDateString()}
+                  </span>
+                )}
+                {selectedClass.endDate && (
+                  <span className={`flex items-center gap-1.5 ${isExpired(selectedClass) ? "text-red-500 font-medium" : ""}`}>
+                    Until {new Date(selectedClass.endDate).toLocaleDateString()}
+                    {isExpired(selectedClass) && " · Expired"}
+                  </span>
+                )}
+              </div>
+
+              {/* Capacity bar */}
               <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <div className={`w-3 h-3 rounded-full ${getColorClasses(selectedClass.color).dot}`} />
-                  <CardTitle className="text-lg">{selectedClass.name}</CardTitle>
-                  {selectedClass.subject && (
-                    <Badge variant="secondary">{selectedClass.subject}</Badge>
-                  )}
+                <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                  <span className="font-semibold text-foreground">
+                    Enrolled Students ({selectedClass.enrollments.length}/{selectedClass.maxStudents})
+                  </span>
+                  {isFull(selectedClass)
+                    ? <span className="text-red-600 font-semibold">Full</span>
+                    : <span>{selectedClass.maxStudents - selectedClass.enrollments.length} spots left</span>
+                  }
                 </div>
-                <p className="mt-1 text-sm text-muted-foreground flex flex-wrap gap-x-4 gap-y-1">
-                  <span className="flex items-center gap-1">
-                    <CalendarDays className="size-3.5" />
-                    {DAY_LABELS[selectedClass.dayOfWeek]}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="size-3.5" />
-                    {formatTime(selectedClass.startTime)} – {formatTime(selectedClass.endTime)}
-                  </span>
-                  {selectedClass.room && (
-                    <span className="flex items-center gap-1">
-                      <MapPin className="size-3.5" />
-                      {selectedClass.room}
-                    </span>
-                  )}
-                  <span className="flex items-center gap-1">
-                    <Users className="size-3.5" />
-                    {selectedClass.enrollments.length} / {selectedClass.maxStudents}
-                  </span>
-                </p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <Button
-                  onClick={() => openAssign(selectedClass)}
-                  size="sm"
-                  className="gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white border-0"
-                >
-                  <UserPlus className="size-3.5" />
-                  Assign Students
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleDeleteClass(selectedClass.id)}
-                  disabled={deletingId === selectedClass.id}
-                  className="text-muted-foreground hover:text-red-600 hover:bg-red-50"
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedClass(null)}
-                  className="text-muted-foreground"
-                >
-                  Close
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <h3 className="text-sm font-semibold text-foreground mb-3">
-              Enrolled Students ({selectedClass.enrollments.length})
-            </h3>
-            {selectedClass.enrollments.length === 0 ? (
-              <p className="text-sm text-muted-foreground italic">
-                No students enrolled yet. Click &quot;Assign Students&quot; to add some.
-              </p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                {selectedClass.enrollments.map((enr) => (
+                <div className="h-2 rounded-full bg-muted overflow-hidden">
                   <div
-                    key={enr.id}
-                    className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-muted/50 border border-border"
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold shrink-0">
-                        {enr.student.name.charAt(0).toUpperCase()}
-                      </div>
-                      <span className="text-sm font-medium truncate">{enr.student.name}</span>
-                    </div>
-                    <button
-                      onClick={() => handleRemoveEnrollment(enr.id)}
-                      className="text-muted-foreground hover:text-red-600 transition-colors shrink-0"
-                      title="Remove from class"
-                    >
-                      <Trash2 className="size-3.5" />
-                    </button>
-                  </div>
-                ))}
+                    className={`h-full rounded-full transition-all ${
+                      isFull(selectedClass) ? "bg-red-500" :
+                      selectedClass.enrollments.length / selectedClass.maxStudents >= 0.8 ? "bg-amber-500" :
+                      "bg-emerald-500"
+                    }`}
+                    style={{ width: `${Math.min(100, (selectedClass.enrollments.length / selectedClass.maxStudents) * 100)}%` }}
+                  />
+                </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+
+              {/* Student list */}
+              {selectedClass.enrollments.length === 0 ? (
+                <p className="text-sm text-muted-foreground italic">
+                  No students enrolled yet. Click &quot;Assign Students&quot; to add some.
+                </p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {selectedClass.enrollments.map((enr) => (
+                    <div
+                      key={enr.id}
+                      className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-muted/50 border border-border"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold shrink-0">
+                          {enr.student.name.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="text-sm font-medium truncate">{enr.student.name}</span>
+                      </div>
+                      <button
+                        onClick={() => handleRemoveEnrollment(enr.id)}
+                        className="text-muted-foreground hover:text-red-600 transition-colors shrink-0"
+                        title="Remove from class"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </DialogBody>
+            <DialogFooter>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDeleteClass(selectedClass.id)}
+                disabled={deletingId === selectedClass.id}
+                className="mr-auto text-muted-foreground hover:text-red-600 hover:bg-red-50"
+              >
+                <Trash2 className="size-3.5 mr-1.5" />
+                Delete
+              </Button>
+              <Button
+                onClick={() => openAttendance(selectedClass)}
+                size="sm"
+                disabled={selectedClass.enrollments.length === 0 || isExpired(selectedClass)}
+                className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white border-0 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <CheckSquare className="size-3.5" />
+                Take Attendance
+              </Button>
+              <Button
+                onClick={() => openAssign(selectedClass)}
+                size="sm"
+                disabled={isExpired(selectedClass) || isFull(selectedClass)}
+                className="gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white border-0 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <UserPlus className="size-3.5" />
+                {isFull(selectedClass) ? "Class Full" : isExpired(selectedClass) ? "Expired" : "Assign Students"}
+              </Button>
+            </DialogFooter>
+          </>
+        )}
+      </Dialog>
 
       {/* ---- Teachers Section ---- */}
       <div>
@@ -734,6 +868,25 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
                   onChange={(e) => setClassForm({ ...classForm, maxStudents: e.target.value })}
                 />
               </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="cstartdate">Start Date</Label>
+                <Input
+                  id="cstartdate"
+                  type="date"
+                  value={classForm.startDate}
+                  onChange={(e) => setClassForm({ ...classForm, startDate: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="cenddate">End Date (Expiry)</Label>
+                <Input
+                  id="cenddate"
+                  type="date"
+                  value={classForm.endDate}
+                  min={classForm.startDate || undefined}
+                  onChange={(e) => setClassForm({ ...classForm, endDate: e.target.value })}
+                />
+              </div>
               <div className="space-y-1.5 sm:col-span-2">
                 <Label>Color</Label>
                 <div className="flex flex-wrap gap-2">
@@ -850,11 +1003,11 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
       </Dialog>
 
       {/* ---- Dialog: Assign Students ---- */}
-      <Dialog open={showAssign} onClose={() => { setShowAssign(false); setSelectedStudentIds([]); }}>
+      <Dialog open={showAssign} onClose={() => { setShowAssign(false); setSelectedStudentIds([]); setAssignErrors({}); }}>
         <DialogHeader
           title={`Assign Students to ${selectedClass?.name ?? ""}`}
           description="Select students to enroll in this class."
-          onClose={() => { setShowAssign(false); setSelectedStudentIds([]); }}
+          onClose={() => { setShowAssign(false); setSelectedStudentIds([]); setAssignErrors({}); }}
         />
         <DialogBody>
           {unenrolledStudents.length === 0 ? (
@@ -865,26 +1018,33 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
             <div className="space-y-2">
               {unenrolledStudents.map((student) => {
                 const checked = selectedStudentIds.includes(student.id);
+                const errMsg = assignErrors[student.id];
                 return (
-                  <label
-                    key={student.id}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border cursor-pointer transition-all ${
-                      checked
-                        ? "bg-indigo-50 border-indigo-300"
-                        : "border-border hover:bg-muted/50"
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => toggleStudentSelect(student.id)}
-                      className="rounded border-border accent-indigo-600"
-                    />
-                    <div className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold shrink-0">
-                      {student.name.charAt(0).toUpperCase()}
-                    </div>
-                    <span className="text-sm font-medium text-foreground">{student.name}</span>
-                  </label>
+                  <div key={student.id} className="space-y-1">
+                    <label
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border cursor-pointer transition-all ${
+                        errMsg
+                          ? "bg-red-50 border-red-300"
+                          : checked
+                          ? "bg-indigo-50 border-indigo-300"
+                          : "border-border hover:bg-muted/50"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleStudentSelect(student.id)}
+                        className="rounded border-border accent-indigo-600"
+                      />
+                      <div className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold shrink-0">
+                        {student.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="text-sm font-medium text-foreground flex-1">{student.name}</span>
+                    </label>
+                    {errMsg && (
+                      <p className="text-xs text-red-600 pl-3">{errMsg}</p>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -905,6 +1065,98 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
             {assigning
               ? "Enrolling..."
               : `Enroll ${selectedStudentIds.length > 0 ? `(${selectedStudentIds.length})` : ""}`}
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
+      {/* ---- Dialog: Take Attendance ---- */}
+      <Dialog
+        open={showAttendance}
+        onClose={() => { setShowAttendance(false); setAttendanceIds([]); setAttendanceResult({}); }}
+      >
+        <DialogHeader
+          title={`Take Attendance — ${selectedClass?.name ?? ""}`}
+          description={selectedClass ? `${DAY_LABELS[selectedClass.dayOfWeek]}, ${formatTime(selectedClass.startTime)}–${formatTime(selectedClass.endTime)}` : ""}
+          onClose={() => { setShowAttendance(false); setAttendanceIds([]); setAttendanceResult({}); }}
+        />
+        <DialogBody>
+          {selectedClass?.enrollments.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No enrolled students.</p>
+          ) : (
+            <div className="space-y-2">
+              {selectedClass?.enrollments.map((enr) => {
+                const checked = attendanceIds.includes(enr.studentId);
+                const sub = attendanceSubs[enr.studentId];
+                const result = attendanceResult[enr.studentId];
+                const used = sub?.sessionsUsed ?? 0;
+                const total = sub?.totalSessions ?? 0;
+                const full = total > 0 && used >= total;
+
+                return (
+                  <div key={enr.studentId}>
+                    <label
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border cursor-pointer transition-all ${
+                        result === "ok"
+                          ? "bg-emerald-50 border-emerald-300"
+                          : result === "error" || result === "no-sub"
+                          ? "bg-red-50 border-red-200"
+                          : checked
+                          ? "bg-indigo-50 border-indigo-300"
+                          : "border-border hover:bg-muted/50"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        disabled={!!result || full}
+                        onChange={() =>
+                          setAttendanceIds((prev) =>
+                            prev.includes(enr.studentId)
+                              ? prev.filter((id) => id !== enr.studentId)
+                              : [...prev, enr.studentId]
+                          )
+                        }
+                        className="rounded border-border accent-indigo-600"
+                      />
+                      <div className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold shrink-0">
+                        {enr.student.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground">{enr.student.name}</p>
+                        {sub ? (
+                          <p className={`text-xs ${full ? "text-red-600" : "text-muted-foreground"}`}>
+                            Sessions: {used}{total > 0 ? ` / ${total}` : " used"}
+                            {full && " · No sessions left"}
+                          </p>
+                        ) : (
+                          <p className="text-xs text-amber-600">No active subscription</p>
+                        )}
+                      </div>
+                      {result === "ok" && <span className="text-xs text-emerald-600 font-medium shrink-0">✓ Marked</span>}
+                      {result === "error" && <span className="text-xs text-red-600 font-medium shrink-0">Failed</span>}
+                      {result === "no-sub" && <span className="text-xs text-amber-600 font-medium shrink-0">No subscription</span>}
+                    </label>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </DialogBody>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => { setShowAttendance(false); setAttendanceIds([]); setAttendanceResult({}); }}
+          >
+            {Object.keys(attendanceResult).length > 0 ? "Done" : "Cancel"}
+          </Button>
+          <Button
+            onClick={handleSubmitAttendance}
+            disabled={submittingAttendance || attendanceIds.length === 0}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white border-0"
+          >
+            {submittingAttendance
+              ? "Saving..."
+              : `Mark ${attendanceIds.length > 0 ? `${attendanceIds.length} ` : ""}Present`}
           </Button>
         </DialogFooter>
       </Dialog>

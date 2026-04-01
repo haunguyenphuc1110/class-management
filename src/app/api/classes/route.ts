@@ -23,13 +23,17 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, subject, teacherId, dayOfWeek, startTime, endTime, room, maxStudents, color } = body;
+    const { name, subject, teacherId, dayOfWeek, startTime, endTime, room, maxStudents, color, startDate, endDate } = body;
 
     if (!name || !teacherId || dayOfWeek === undefined || !startTime || !endTime) {
       return NextResponse.json(
         { error: "name, teacherId, dayOfWeek, startTime, endTime are required" },
         { status: 400 }
       );
+    }
+
+    if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
+      return NextResponse.json({ error: "End date must be after start date" }, { status: 400 });
     }
 
     const newClass = await prisma.class.create({
@@ -43,6 +47,8 @@ export async function POST(request: Request) {
         room: room || null,
         maxStudents: maxStudents ? Number(maxStudents) : 20,
         color: color || "blue",
+        startDate: startDate ? new Date(startDate) : null,
+        endDate: endDate ? new Date(endDate) : null,
       },
       include: {
         teacher: true,

@@ -8,7 +8,10 @@ export async function GET(request: Request) {
 
     const subscriptions = await prisma.subscription.findMany({
       where: studentId ? { studentId } : {},
-      include: { student: { include: { parent: true } } },
+      include: {
+        student: { include: { parent: true } },
+        sessions: { orderBy: { date: "asc" }, select: { id: true, date: true, classId: true } },
+      },
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json(subscriptions);
@@ -21,7 +24,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { studentId, plan, startDate, endDate, amount, notes } = body;
+    const { studentId, plan, startDate, endDate, amount, totalSessions, notes } = body;
 
     if (!studentId || !plan || !startDate || !endDate || amount === undefined) {
       return NextResponse.json(
@@ -37,10 +40,14 @@ export async function POST(request: Request) {
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         amount: Number(amount),
+        totalSessions: totalSessions ? Number(totalSessions) : 0,
         notes: notes || null,
         status: "active",
       },
-      include: { student: { include: { parent: true } } },
+      include: {
+        student: { include: { parent: true } },
+        sessions: { select: { id: true, date: true, classId: true } },
+      },
     });
 
     return NextResponse.json(subscription, { status: 201 });
