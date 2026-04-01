@@ -18,7 +18,7 @@ export function ParentsClient({ initialParents }: ParentsClientProps) {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
 
   const [form, setForm] = useState<ParentFormValues>({
     name: "",
@@ -53,17 +53,20 @@ export function ParentsClient({ initialParents }: ParentsClientProps) {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Delete this parent? This will also remove their students.")) return;
-    setDeletingId(id);
+  const handleSaveParent = async (id: string, editForm: ParentFormValues) => {
+    setSavingId(id);
     try {
-      const res = await fetch(`/api/parents/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        setParents((prev) => prev.filter((p) => p.id !== id));
-        router.refresh();
-      }
+      const res = await fetch(`/api/parents/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editForm),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update parent");
+      setParents((prev) => prev.map((p) => (p.id === id ? data : p)));
+      router.refresh();
     } finally {
-      setDeletingId(null);
+      setSavingId(null);
     }
   };
 
@@ -101,8 +104,8 @@ export function ParentsClient({ initialParents }: ParentsClientProps) {
       {/* Parent List / Empty State */}
       <ParentList
         parents={parents}
-        deletingId={deletingId}
-        onDelete={handleDelete}
+        savingId={savingId}
+        onSave={handleSaveParent}
         onAddFirst={() => setShowForm(true)}
       />
     </div>

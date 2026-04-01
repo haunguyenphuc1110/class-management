@@ -19,7 +19,7 @@ export function StudentsClient({ initialStudents, parents }: StudentsClientProps
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
 
   const [form, setForm] = useState<StudentFormValues>({
     name: "",
@@ -57,17 +57,23 @@ export function StudentsClient({ initialStudents, parents }: StudentsClientProps
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Delete this student? Their enrollments and subscriptions will also be removed.")) return;
-    setDeletingId(id);
+  const handleSaveStudent = async (id: string, editForm: StudentFormValues) => {
+    setSavingId(id);
     try {
-      const res = await fetch(`/api/students/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        setStudents((prev) => prev.filter((s) => s.id !== id));
-        router.refresh();
-      }
+      const res = await fetch(`/api/students/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...editForm,
+          dateOfBirth: editForm.dateOfBirth || null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update student");
+      setStudents((prev) => prev.map((s) => (s.id === id ? data : s)));
+      router.refresh();
     } finally {
-      setDeletingId(null);
+      setSavingId(null);
     }
   };
 
@@ -106,8 +112,9 @@ export function StudentsClient({ initialStudents, parents }: StudentsClientProps
       {/* Student List / Empty State */}
       <StudentList
         students={students}
-        deletingId={deletingId}
-        onDelete={handleDelete}
+        parents={parents}
+        savingId={savingId}
+        onSave={handleSaveStudent}
         onAddFirst={() => setShowForm(true)}
       />
     </div>

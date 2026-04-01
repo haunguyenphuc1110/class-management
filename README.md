@@ -118,9 +118,9 @@ API routes live under `src/app/api/` following REST conventions:
 | Route | Methods | Description |
 |-------|---------|-------------|
 | `/api/parents` | GET, POST | List and create parents |
-| `/api/parents/[id]` | DELETE | Delete a parent |
+| `/api/parents/[id]` | PATCH | Update a parent |
 | `/api/students` | GET, POST | List and create students |
-| `/api/students/[id]` | DELETE | Delete a student |
+| `/api/students/[id]` | PATCH | Update a student |
 | `/api/teachers` | GET, POST | List and create teachers |
 | `/api/classes` | GET, POST | List and create classes |
 | `/api/classes/[id]` | DELETE | Delete a class (cascades enrollments) |
