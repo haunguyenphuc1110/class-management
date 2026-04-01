@@ -15,9 +15,19 @@ interface ParentListProps {
   onAddFirst: () => void;
 }
 
-export function ParentList({ parents, savingId, onSave, onAddFirst }: ParentListProps) {
+export function ParentList({
+  parents,
+  savingId,
+  onSave,
+  onAddFirst,
+}: ParentListProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<ParentFormValues>({ name: "", email: "", phone: "", address: "" });
+  const [editForm, setEditForm] = useState<ParentFormValues>({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+  });
   const [editError, setEditError] = useState("");
 
   const startEdit = (parent: Parent) => {
@@ -70,30 +80,41 @@ export function ParentList({ parents, savingId, onSave, onAddFirst }: ParentList
         <Card key={parent.id} className="hover:shadow-md transition-shadow">
           <CardContent className="p-5">
             {editingId === parent.id ? (
-              <form onSubmit={(e) => handleSave(e, parent.id)} className="space-y-3">
+              <form
+                onSubmit={(e) => handleSave(e, parent.id)}
+                className="space-y-3"
+              >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Input
                     placeholder="Full Name *"
                     value={editForm.name}
-                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, name: e.target.value })
+                    }
                     required
                   />
                   <Input
                     type="email"
                     placeholder="Email *"
                     value={editForm.email}
-                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, email: e.target.value })
+                    }
                     required
                   />
                   <Input
                     placeholder="Phone"
                     value={editForm.phone}
-                    onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, phone: e.target.value })
+                    }
                   />
                   <Input
                     placeholder="Address"
                     value={editForm.address}
-                    onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, address: e.target.value })
+                    }
                   />
                 </div>
                 {editError && (
@@ -102,7 +123,12 @@ export function ParentList({ parents, savingId, onSave, onAddFirst }: ParentList
                   </p>
                 )}
                 <div className="flex justify-end gap-2">
-                  <Button type="button" variant="outline" size="sm" onClick={() => setEditingId(null)}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEditingId(null)}
+                  >
                     Cancel
                   </Button>
                   <Button
@@ -123,9 +149,12 @@ export function ParentList({ parents, savingId, onSave, onAddFirst }: ParentList
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-foreground">{parent.name}</h3>
+                      <h3 className="font-semibold text-foreground">
+                        {parent.name}
+                      </h3>
                       <Badge variant="blue">
-                        {parent.students.length} student{parent.students.length !== 1 ? "s" : ""}
+                        {parent.students.length} student
+                        {parent.students.length !== 1 ? "s" : ""}
                       </Badge>
                     </div>
                     <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">

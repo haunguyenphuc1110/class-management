@@ -17,7 +17,10 @@ export async function GET(request: Request) {
     return NextResponse.json(sessions);
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Failed to fetch sessions" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch sessions" },
+      { status: 500 },
+    );
   }
 }
 
@@ -27,7 +30,10 @@ export async function POST(request: Request) {
     const { subscriptionId, classId, notes, date } = body;
 
     if (!subscriptionId) {
-      return NextResponse.json({ error: "subscriptionId is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "subscriptionId is required" },
+        { status: 400 },
+      );
     }
 
     const subscription = await prisma.subscription.findUnique({
@@ -36,13 +42,19 @@ export async function POST(request: Request) {
     });
 
     if (!subscription) {
-      return NextResponse.json({ error: "Subscription not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Subscription not found" },
+        { status: 404 },
+      );
     }
 
-    if (subscription.totalSessions > 0 && subscription._count.sessions >= subscription.totalSessions) {
+    if (
+      subscription.totalSessions > 0 &&
+      subscription._count.sessions >= subscription.totalSessions
+    ) {
       return NextResponse.json(
         { error: "No sessions remaining in this subscription." },
-        { status: 422 }
+        { status: 422 },
       );
     }
 
@@ -59,6 +71,9 @@ export async function POST(request: Request) {
     return NextResponse.json(session, { status: 201 });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Failed to log session" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to log session" },
+      { status: 500 },
+    );
   }
 }

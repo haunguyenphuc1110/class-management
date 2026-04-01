@@ -25,7 +25,11 @@ interface ClassesClientProps {
   allStudents: Student[];
 }
 
-export function ClassesClient({ initialClasses, initialTeachers, allStudents }: ClassesClientProps) {
+export function ClassesClient({
+  initialClasses,
+  initialTeachers,
+  allStudents,
+}: ClassesClientProps) {
   const router = useRouter();
 
   const [classes, setClasses] = useState<ClassItem[]>(initialClasses);
@@ -41,13 +45,20 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
   // Attendance state
   const [showAttendance, setShowAttendance] = useState(false);
   const [attendanceIds, setAttendanceIds] = useState<string[]>([]);
-  const [attendanceSubs, setAttendanceSubs] = useState<Record<string, AttendanceSubInfo | null>>({});
+  const [attendanceSubs, setAttendanceSubs] = useState<
+    Record<string, AttendanceSubInfo | null>
+  >({});
   const [submittingAttendance, setSubmittingAttendance] = useState(false);
-  const [attendanceResult, setAttendanceResult] = useState<Record<string, "ok" | "error" | "no-sub">>({});
+  const [attendanceResult, setAttendanceResult] = useState<
+    Record<string, "ok" | "error" | "no-sub">
+  >({});
 
   useEffect(() => {
     if (selectedClass) {
-      detailPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      detailPanelRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
     }
   }, [selectedClass]);
 
@@ -180,12 +191,14 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
     setShowAssign(true);
   };
 
-  const enrolledIds = new Set(selectedClass?.enrollments.map((e) => e.studentId) ?? []);
+  const enrolledIds = new Set(
+    selectedClass?.enrollments.map((e) => e.studentId) ?? [],
+  );
   const unenrolledStudents = allStudents.filter((s) => !enrolledIds.has(s.id));
 
   const toggleStudentSelect = (id: string) => {
     setSelectedStudentIds((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id],
     );
   };
 
@@ -203,12 +216,15 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
           });
           const data = await res.json();
           return { studentId, ok: res.ok, data };
-        })
+        }),
       );
 
       const errors: Record<string, string> = {};
       const succeeded = results.filter((r) => {
-        if (!r.ok) { errors[r.studentId] = r.data.error; return false; }
+        if (!r.ok) {
+          errors[r.studentId] = r.data.error;
+          return false;
+        }
         return true;
       });
 
@@ -225,11 +241,13 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
           prev.map((c) =>
             c.id === selectedClass.id
               ? { ...c, enrollments: [...c.enrollments, ...newEnrollments] }
-              : c
-          )
+              : c,
+          ),
         );
         setSelectedClass((prev) =>
-          prev ? { ...prev, enrollments: [...prev.enrollments, ...newEnrollments] } : prev
+          prev
+            ? { ...prev, enrollments: [...prev.enrollments, ...newEnrollments] }
+            : prev,
         );
         setSelectedStudentIds((prev) => prev.filter((id) => errors[id]));
         router.refresh();
@@ -250,10 +268,17 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
         body: JSON.stringify({ id: enrollmentId }),
       });
       if (res.ok) {
-        const updatedEnrollments = selectedClass.enrollments.filter((e) => e.id !== enrollmentId);
-        const updatedClass = { ...selectedClass, enrollments: updatedEnrollments };
+        const updatedEnrollments = selectedClass.enrollments.filter(
+          (e) => e.id !== enrollmentId,
+        );
+        const updatedClass = {
+          ...selectedClass,
+          enrollments: updatedEnrollments,
+        };
         setSelectedClass(updatedClass);
-        setClasses((prev) => prev.map((c) => (c.id === selectedClass.id ? updatedClass : c)));
+        setClasses((prev) =>
+          prev.map((c) => (c.id === selectedClass.id ? updatedClass : c)),
+        );
         router.refresh();
       }
     } catch {
@@ -271,16 +296,24 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
     await Promise.all(
       cls.enrollments.map(async (enr) => {
         try {
-          const res = await fetch(`/api/subscriptions?studentId=${enr.studentId}`);
+          const res = await fetch(
+            `/api/subscriptions?studentId=${enr.studentId}`,
+          );
           const subs = await res.json();
-          const active = Array.isArray(subs) ? subs.find((s: { status: string }) => s.status === "active") : null;
+          const active = Array.isArray(subs)
+            ? subs.find((s: { status: string }) => s.status === "active")
+            : null;
           subsMap[enr.studentId] = active
-            ? { id: active.id, totalSessions: active.totalSessions, sessionsUsed: active.sessions?.length ?? 0 }
+            ? {
+                id: active.id,
+                totalSessions: active.totalSessions,
+                sessionsUsed: active.sessions?.length ?? 0,
+              }
             : null;
         } catch {
           subsMap[enr.studentId] = null;
         }
-      })
+      }),
     );
     setAttendanceSubs(subsMap);
   };
@@ -292,26 +325,35 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
     await Promise.all(
       attendanceIds.map(async (studentId) => {
         const sub = attendanceSubs[studentId];
-        if (!sub) { result[studentId] = "no-sub"; return; }
+        if (!sub) {
+          result[studentId] = "no-sub";
+          return;
+        }
         try {
           const res = await fetch("/api/sessions", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ subscriptionId: sub.id, classId: selectedClass.id }),
+            body: JSON.stringify({
+              subscriptionId: sub.id,
+              classId: selectedClass.id,
+            }),
           });
           result[studentId] = res.ok ? "ok" : "error";
           if (res.ok) {
             setAttendanceSubs((prev) => ({
               ...prev,
               [studentId]: prev[studentId]
-                ? { ...prev[studentId]!, sessionsUsed: prev[studentId]!.sessionsUsed + 1 }
+                ? {
+                    ...prev[studentId]!,
+                    sessionsUsed: prev[studentId]!.sessionsUsed + 1,
+                  }
                 : null,
             }));
           }
         } catch {
           result[studentId] = "error";
         }
-      })
+      }),
     );
     setAttendanceResult(result);
     setAttendanceIds([]);
@@ -322,7 +364,7 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
     setAttendanceIds((prev) =>
       prev.includes(studentId)
         ? prev.filter((id) => id !== studentId)
-        : [...prev, studentId]
+        : [...prev, studentId],
     );
   };
 
@@ -337,7 +379,11 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
           </p>
         </div>
         <Button
-          onClick={() => { setError(""); setSelectedClass(null); setShowNewClass(true); }}
+          onClick={() => {
+            setError("");
+            setSelectedClass(null);
+            setShowNewClass(true);
+          }}
           className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white border-0"
         >
           <Plus className="size-4" />
@@ -349,7 +395,11 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
       <WeekGrid
         classes={classes}
         onSelectClass={setSelectedClass}
-        onNewClass={() => { setError(""); setSelectedClass(null); setShowNewClass(true); }}
+        onNewClass={() => {
+          setError("");
+          setSelectedClass(null);
+          setShowNewClass(true);
+        }}
       />
 
       {/* Class Detail Dialog */}
@@ -372,8 +422,14 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
         teacherForm={teacherForm}
         loading={loading}
         error={error}
-        onOpenDialog={() => { setError(""); setShowNewTeacher(true); }}
-        onCloseDialog={() => { setShowNewTeacher(false); setError(""); }}
+        onOpenDialog={() => {
+          setError("");
+          setShowNewTeacher(true);
+        }}
+        onCloseDialog={() => {
+          setShowNewTeacher(false);
+          setError("");
+        }}
         onFormChange={setTeacherForm}
         onSubmit={handleCreateTeacher}
       />
@@ -385,7 +441,10 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
         classForm={classForm}
         loading={loading}
         error={error}
-        onClose={() => { setShowNewClass(false); setError(""); }}
+        onClose={() => {
+          setShowNewClass(false);
+          setError("");
+        }}
         onFormChange={setClassForm}
         onSubmit={handleCreateClass}
       />
@@ -398,7 +457,11 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
         selectedStudentIds={selectedStudentIds}
         assignErrors={assignErrors}
         assigning={assigning}
-        onClose={() => { setShowAssign(false); setSelectedStudentIds([]); setAssignErrors({}); }}
+        onClose={() => {
+          setShowAssign(false);
+          setSelectedStudentIds([]);
+          setAssignErrors({});
+        }}
         onToggleStudent={toggleStudentSelect}
         onAssign={handleAssign}
       />
@@ -411,7 +474,11 @@ export function ClassesClient({ initialClasses, initialTeachers, allStudents }: 
         attendanceSubs={attendanceSubs}
         attendanceResult={attendanceResult}
         submitting={submittingAttendance}
-        onClose={() => { setShowAttendance(false); setAttendanceIds([]); setAttendanceResult({}); }}
+        onClose={() => {
+          setShowAttendance(false);
+          setAttendanceIds([]);
+          setAttendanceResult({});
+        }}
         onToggleStudent={toggleAttendanceStudent}
         onSubmit={handleSubmitAttendance}
       />

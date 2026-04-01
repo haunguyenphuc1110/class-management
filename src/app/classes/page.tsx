@@ -35,5 +35,11 @@ async function getData() {
 
 export default async function ClassesPage() {
   const { classes, teachers, students } = await getData();
-  return <ClassesClient initialClasses={classes} initialTeachers={teachers} allStudents={students} />;
+  return (
+    <ClassesClient
+      initialClasses={classes}
+      initialTeachers={teachers}
+      allStudents={students}
+    />
+  );
 }

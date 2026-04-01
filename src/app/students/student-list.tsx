@@ -32,9 +32,20 @@ interface StudentListProps {
   onAddFirst: () => void;
 }
 
-export function StudentList({ students, parents, savingId, onSave, onAddFirst }: StudentListProps) {
+export function StudentList({
+  students,
+  parents,
+  savingId,
+  onSave,
+  onAddFirst,
+}: StudentListProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<StudentFormValues>({ name: "", dateOfBirth: "", parentId: "", notes: "" });
+  const [editForm, setEditForm] = useState<StudentFormValues>({
+    name: "",
+    dateOfBirth: "",
+    parentId: "",
+    notes: "",
+  });
   const [editError, setEditError] = useState("");
 
   const startEdit = (student: Student) => {
@@ -66,7 +77,9 @@ export function StudentList({ students, parents, savingId, onSave, onAddFirst }:
           <div className="w-14 h-14 rounded-full bg-indigo-50 flex items-center justify-center mb-4">
             <UserCheck className="size-7 text-indigo-500" />
           </div>
-          <h3 className="font-semibold text-foreground mb-1">No students yet</h3>
+          <h3 className="font-semibold text-foreground mb-1">
+            No students yet
+          </h3>
           <p className="text-sm text-muted-foreground mb-4">
             Add your first student to get started.
           </p>
@@ -84,38 +97,55 @@ export function StudentList({ students, parents, savingId, onSave, onAddFirst }:
   return (
     <div className="space-y-3">
       {students.map((student) => {
-        const sub = student.subscriptions.length > 0 ? student.subscriptions[0] : null;
+        const sub =
+          student.subscriptions.length > 0 ? student.subscriptions[0] : null;
         return (
           <Card key={student.id} className="hover:shadow-md transition-shadow">
             <CardContent className="p-5">
               {editingId === student.id ? (
-                <form onSubmit={(e) => handleSave(e, student.id)} className="space-y-3">
+                <form
+                  onSubmit={(e) => handleSave(e, student.id)}
+                  className="space-y-3"
+                >
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <Input
                       placeholder="Full Name *"
                       value={editForm.name}
-                      onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, name: e.target.value })
+                      }
                       required
                     />
                     <Select
                       value={editForm.parentId}
-                      onChange={(e) => setEditForm({ ...editForm, parentId: e.target.value })}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, parentId: e.target.value })
+                      }
                       required
                     >
                       <option value="">Select parent *</option>
                       {parents.map((p) => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
+                        <option key={p.id} value={p.id}>
+                          {p.name}
+                        </option>
                       ))}
                     </Select>
                     <Input
                       type="date"
                       value={editForm.dateOfBirth}
-                      onChange={(e) => setEditForm({ ...editForm, dateOfBirth: e.target.value })}
+                      onChange={(e) =>
+                        setEditForm({
+                          ...editForm,
+                          dateOfBirth: e.target.value,
+                        })
+                      }
                     />
                     <Textarea
                       placeholder="Notes"
                       value={editForm.notes}
-                      onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, notes: e.target.value })
+                      }
                       rows={1}
                     />
                   </div>
@@ -125,7 +155,12 @@ export function StudentList({ students, parents, savingId, onSave, onAddFirst }:
                     </p>
                   )}
                   <div className="flex justify-end gap-2">
-                    <Button type="button" variant="outline" size="sm" onClick={() => setEditingId(null)}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditingId(null)}
+                    >
                       Cancel
                     </Button>
                     <Button
@@ -146,15 +181,17 @@ export function StudentList({ students, parents, savingId, onSave, onAddFirst }:
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold text-foreground">{student.name}</h3>
+                        <h3 className="font-semibold text-foreground">
+                          {student.name}
+                        </h3>
                         {sub && (
                           <Badge
                             variant={
                               sub.status === "active"
                                 ? "success"
                                 : sub.status === "paused"
-                                ? "warning"
-                                : "gray"
+                                  ? "warning"
+                                  : "gray"
                             }
                           >
                             {sub.plan}
@@ -170,7 +207,8 @@ export function StudentList({ students, parents, savingId, onSave, onAddFirst }:
                       <div className="mt-2 flex items-center gap-2 flex-wrap">
                         <span className="flex items-center gap-1 text-xs text-muted-foreground">
                           <BookOpen className="size-3" />
-                          {student.enrollments.length} class{student.enrollments.length !== 1 ? "es" : ""}
+                          {student.enrollments.length} class
+                          {student.enrollments.length !== 1 ? "es" : ""}
                         </span>
                         {student.enrollments.map((enr) => (
                           <span

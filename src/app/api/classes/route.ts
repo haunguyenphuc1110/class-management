@@ -16,24 +16,50 @@ export async function GET() {
     return NextResponse.json(classes);
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Failed to fetch classes" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch classes" },
+      { status: 500 },
+    );
   }
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, subject, teacherId, dayOfWeek, startTime, endTime, room, maxStudents, color, startDate, endDate } = body;
+    const {
+      name,
+      subject,
+      teacherId,
+      dayOfWeek,
+      startTime,
+      endTime,
+      room,
+      maxStudents,
+      color,
+      startDate,
+      endDate,
+    } = body;
 
-    if (!name || !teacherId || dayOfWeek === undefined || !startTime || !endTime) {
+    if (
+      !name ||
+      !teacherId ||
+      dayOfWeek === undefined ||
+      !startTime ||
+      !endTime
+    ) {
       return NextResponse.json(
-        { error: "name, teacherId, dayOfWeek, startTime, endTime are required" },
-        { status: 400 }
+        {
+          error: "name, teacherId, dayOfWeek, startTime, endTime are required",
+        },
+        { status: 400 },
       );
     }
 
     if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
-      return NextResponse.json({ error: "End date must be after start date" }, { status: 400 });
+      return NextResponse.json(
+        { error: "End date must be after start date" },
+        { status: 400 },
+      );
     }
 
     const newClass = await prisma.class.create({
@@ -59,6 +85,9 @@ export async function POST(request: Request) {
     return NextResponse.json(newClass, { status: 201 });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Failed to create class" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create class" },
+      { status: 500 },
+    );
   }
 }

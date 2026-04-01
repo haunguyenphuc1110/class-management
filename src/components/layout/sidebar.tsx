@@ -53,7 +53,7 @@ export function Sidebar() {
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
                 isActive
                   ? "bg-indigo-600 text-white shadow-sm"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
               )}
             >
               <Icon className="size-4 shrink-0" />
@@ -78,7 +78,9 @@ export function Sidebar() {
           <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-indigo-600 text-white">
             <GraduationCap className="size-4" />
           </div>
-          <span className="font-bold text-sidebar-foreground">ClassManager</span>
+          <span className="font-bold text-sidebar-foreground">
+            ClassManager
+          </span>
         </div>
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
@@ -101,7 +103,7 @@ export function Sidebar() {
       <div
         className={cn(
           "lg:hidden fixed top-0 left-0 z-50 h-full w-64 bg-sidebar flex flex-col transition-transform duration-200",
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
+          mobileOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         <NavContent />

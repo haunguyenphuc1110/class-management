@@ -84,7 +84,11 @@ export function ParentsClient({ initialParents }: ParentsClientProps) {
           onClick={() => setShowForm(!showForm)}
           className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white border-0"
         >
-          {showForm ? <ChevronUp className="size-4" /> : <Plus className="size-4" />}
+          {showForm ? (
+            <ChevronUp className="size-4" />
+          ) : (
+            <Plus className="size-4" />
+          )}
           {showForm ? "Cancel" : "Add Parent"}
         </Button>
       </div>
@@ -95,7 +99,10 @@ export function ParentsClient({ initialParents }: ParentsClientProps) {
           form={form}
           onChange={setForm}
           onSubmit={handleSubmit}
-          onCancel={() => { setShowForm(false); setError(""); }}
+          onCancel={() => {
+            setShowForm(false);
+            setError("");
+          }}
           loading={loading}
           error={error}
         />

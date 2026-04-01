@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -11,6 +11,9 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Failed to delete session" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to delete session" },
+      { status: 500 },
+    );
   }
 }

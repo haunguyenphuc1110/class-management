@@ -1,8 +1,21 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogHeader, DialogBody, DialogFooter } from "@/components/ui/dialog";
-import { CalendarDays, Clock, MapPin, Users, UserPlus, Trash2, CheckSquare } from "lucide-react";
+import {
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  CalendarDays,
+  Clock,
+  MapPin,
+  Users,
+  UserPlus,
+  Trash2,
+  CheckSquare,
+} from "lucide-react";
 import { ClassItem } from "./types";
 import { DAY_LABELS, formatTime, isExpired, isFull } from "./constants";
 
@@ -43,7 +56,8 @@ export function ClassDetail({
               </span>
               <span className="flex items-center gap-1.5">
                 <Clock className="size-4 text-indigo-500" />
-                {formatTime(selectedClass.startTime)} – {formatTime(selectedClass.endTime)}
+                {formatTime(selectedClass.startTime)} –{" "}
+                {formatTime(selectedClass.endTime)}
               </span>
               {selectedClass.room && (
                 <span className="flex items-center gap-1.5">
@@ -53,7 +67,8 @@ export function ClassDetail({
               )}
               <span className="flex items-center gap-1.5">
                 <Users className="size-4 text-indigo-500" />
-                {selectedClass.enrollments.length} / {selectedClass.maxStudents} students
+                {selectedClass.enrollments.length} / {selectedClass.maxStudents}{" "}
+                students
               </span>
               {selectedClass.startDate && (
                 <span className="flex items-center gap-1.5">
@@ -63,7 +78,9 @@ export function ClassDetail({
               {selectedClass.endDate && (
                 <span
                   className={`flex items-center gap-1.5 ${
-                    isExpired(selectedClass.endDate) ? "text-red-500 font-medium" : ""
+                    isExpired(selectedClass.endDate)
+                      ? "text-red-500 font-medium"
+                      : ""
                   }`}
                 >
                   Until {new Date(selectedClass.endDate).toLocaleDateString()}
@@ -76,29 +93,42 @@ export function ClassDetail({
             <div>
               <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
                 <span className="font-semibold text-foreground">
-                  Enrolled Students ({selectedClass.enrollments.length}/{selectedClass.maxStudents})
+                  Enrolled Students ({selectedClass.enrollments.length}/
+                  {selectedClass.maxStudents})
                 </span>
-                {isFull(selectedClass.enrollments.length, selectedClass.maxStudents) ? (
+                {isFull(
+                  selectedClass.enrollments.length,
+                  selectedClass.maxStudents,
+                ) ? (
                   <span className="text-red-600 font-semibold">Full</span>
                 ) : (
                   <span>
-                    {selectedClass.maxStudents - selectedClass.enrollments.length} spots left
+                    {selectedClass.maxStudents -
+                      selectedClass.enrollments.length}{" "}
+                    spots left
                   </span>
                 )}
               </div>
               <div className="h-2 rounded-full bg-muted overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all ${
-                    isFull(selectedClass.enrollments.length, selectedClass.maxStudents)
+                    isFull(
+                      selectedClass.enrollments.length,
+                      selectedClass.maxStudents,
+                    )
                       ? "bg-red-500"
-                      : selectedClass.enrollments.length / selectedClass.maxStudents >= 0.8
-                      ? "bg-amber-500"
-                      : "bg-emerald-500"
+                      : selectedClass.enrollments.length /
+                            selectedClass.maxStudents >=
+                          0.8
+                        ? "bg-amber-500"
+                        : "bg-emerald-500"
                   }`}
                   style={{
                     width: `${Math.min(
                       100,
-                      (selectedClass.enrollments.length / selectedClass.maxStudents) * 100
+                      (selectedClass.enrollments.length /
+                        selectedClass.maxStudents) *
+                        100,
                     )}%`,
                   }}
                 />
@@ -108,7 +138,8 @@ export function ClassDetail({
             {/* Student list */}
             {selectedClass.enrollments.length === 0 ? (
               <p className="text-sm text-muted-foreground italic">
-                No students enrolled yet. Click &quot;Assign Students&quot; to add some.
+                No students enrolled yet. Click &quot;Assign Students&quot; to
+                add some.
               </p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -121,7 +152,9 @@ export function ClassDetail({
                       <div className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold shrink-0">
                         {enr.student.name.charAt(0).toUpperCase()}
                       </div>
-                      <span className="text-sm font-medium truncate">{enr.student.name}</span>
+                      <span className="text-sm font-medium truncate">
+                        {enr.student.name}
+                      </span>
                     </div>
                     <button
                       onClick={() => onRemoveEnrollment(enr.id)}
@@ -149,7 +182,10 @@ export function ClassDetail({
             <Button
               onClick={() => onAttendance(selectedClass)}
               size="sm"
-              disabled={selectedClass.enrollments.length === 0 || isExpired(selectedClass.endDate)}
+              disabled={
+                selectedClass.enrollments.length === 0 ||
+                isExpired(selectedClass.endDate)
+              }
               className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white border-0 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <CheckSquare className="size-3.5" />
@@ -160,16 +196,22 @@ export function ClassDetail({
               size="sm"
               disabled={
                 isExpired(selectedClass.endDate) ||
-                isFull(selectedClass.enrollments.length, selectedClass.maxStudents)
+                isFull(
+                  selectedClass.enrollments.length,
+                  selectedClass.maxStudents,
+                )
               }
               className="gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white border-0 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <UserPlus className="size-3.5" />
-              {isFull(selectedClass.enrollments.length, selectedClass.maxStudents)
+              {isFull(
+                selectedClass.enrollments.length,
+                selectedClass.maxStudents,
+              )
                 ? "Class Full"
                 : isExpired(selectedClass.endDate)
-                ? "Expired"
-                : "Assign Students"}
+                  ? "Expired"
+                  : "Assign Students"}
             </Button>
           </DialogFooter>
         </>

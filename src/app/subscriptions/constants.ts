@@ -11,10 +11,10 @@ export const STATUS_CONFIG: Record<
   string,
   { label: string; variant: "success" | "warning" | "destructive" | "gray" }
 > = {
-  active:    { label: "Active",    variant: "success" },
-  paused:    { label: "Paused",    variant: "warning" },
+  active: { label: "Active", variant: "success" },
+  paused: { label: "Paused", variant: "warning" },
   cancelled: { label: "Cancelled", variant: "destructive" },
-  expired:   { label: "Expired",   variant: "gray" },
+  expired: { label: "Expired", variant: "gray" },
 };
 
 export function formatDate(d: string | Date) {
@@ -26,5 +26,8 @@ export function formatDate(d: string | Date) {
 }
 
 export function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(amount);
 }

@@ -35,7 +35,9 @@ export function SubscriptionStats({
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Active Revenue</p>
-            <p className="text-2xl font-bold text-foreground">{formatCurrency(totalRevenue)}</p>
+            <p className="text-2xl font-bold text-foreground">
+              {formatCurrency(totalRevenue)}
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -46,7 +48,9 @@ export function SubscriptionStats({
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Sessions Used</p>
-            <p className="text-2xl font-bold text-foreground">{totalSessionsUsed}</p>
+            <p className="text-2xl font-bold text-foreground">
+              {totalSessionsUsed}
+            </p>
           </div>
         </CardContent>
       </Card>

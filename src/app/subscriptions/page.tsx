@@ -51,7 +51,11 @@ export default function SubscriptionsPage() {
   }, [fetchData]);
 
   const handlePlanChange = (plan: string) => {
-    setForm((f) => ({ ...f, plan, totalSessions: PLAN_DEFAULT_SESSIONS[plan] ?? "0" }));
+    setForm((f) => ({
+      ...f,
+      plan,
+      totalSessions: PLAN_DEFAULT_SESSIONS[plan] ?? "0",
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -134,25 +138,33 @@ export default function SubscriptionsPage() {
                   { id: data.id, date: data.date, classId: data.classId },
                 ],
               }
-            : s
-        )
+            : s,
+        ),
       );
     } finally {
       setLoggingId(null);
     }
   };
 
-  const handleUndoSession = async (subscriptionId: string, sessionId: string) => {
+  const handleUndoSession = async (
+    subscriptionId: string,
+    sessionId: string,
+  ) => {
     if (!confirm("Remove this session?")) return;
     try {
-      const res = await fetch(`/api/sessions/${sessionId}`, { method: "DELETE" });
+      const res = await fetch(`/api/sessions/${sessionId}`, {
+        method: "DELETE",
+      });
       if (res.ok) {
         setSubscriptions((prev) =>
           prev.map((s) =>
             s.id === subscriptionId
-              ? { ...s, sessions: s.sessions.filter((sess) => sess.id !== sessionId) }
-              : s
-          )
+              ? {
+                  ...s,
+                  sessions: s.sessions.filter((sess) => sess.id !== sessionId),
+                }
+              : s,
+          ),
         );
       }
     } catch {
@@ -164,7 +176,10 @@ export default function SubscriptionsPage() {
   const totalRevenue = subscriptions
     .filter((s) => s.status === "active")
     .reduce((sum, s) => sum + s.amount, 0);
-  const totalSessionsUsed = subscriptions.reduce((sum, s) => sum + s.sessions.length, 0);
+  const totalSessionsUsed = subscriptions.reduce(
+    (sum, s) => sum + s.sessions.length,
+    0,
+  );
 
   return (
     <div className="flex-1 p-6 lg:p-8">
@@ -173,14 +188,22 @@ export default function SubscriptionsPage() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Subscriptions</h1>
           <p className="mt-1 text-muted-foreground">
-            {subscriptions.length} subscription{subscriptions.length !== 1 ? "s" : ""} total
+            {subscriptions.length} subscription
+            {subscriptions.length !== 1 ? "s" : ""} total
           </p>
         </div>
         <Button
-          onClick={() => { setShowForm(!showForm); setError(""); }}
+          onClick={() => {
+            setShowForm(!showForm);
+            setError("");
+          }}
           className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white border-0"
         >
-          {showForm ? <ChevronUp className="size-4" /> : <Plus className="size-4" />}
+          {showForm ? (
+            <ChevronUp className="size-4" />
+          ) : (
+            <Plus className="size-4" />
+          )}
           {showForm ? "Cancel" : "Add Subscription"}
         </Button>
       </div>
@@ -204,7 +227,10 @@ export default function SubscriptionsPage() {
           onChange={setForm}
           onPlanChange={handlePlanChange}
           onSubmit={handleSubmit}
-          onCancel={() => { setShowForm(false); setError(""); }}
+          onCancel={() => {
+            setShowForm(false);
+            setError("");
+          }}
         />
       )}
 
@@ -213,7 +239,9 @@ export default function SubscriptionsPage() {
         <div className="flex items-center justify-center py-20">
           <div className="text-center space-y-3">
             <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" />
-            <p className="text-sm text-muted-foreground">Loading subscriptions...</p>
+            <p className="text-sm text-muted-foreground">
+              Loading subscriptions...
+            </p>
           </div>
         </div>
       )}
@@ -225,7 +253,9 @@ export default function SubscriptionsPage() {
             <div className="w-14 h-14 rounded-full bg-violet-50 flex items-center justify-center mb-4">
               <CreditCard className="size-7 text-violet-500" />
             </div>
-            <h3 className="font-semibold text-foreground mb-1">No subscriptions yet</h3>
+            <h3 className="font-semibold text-foreground mb-1">
+              No subscriptions yet
+            </h3>
             <p className="text-sm text-muted-foreground mb-4">
               Create your first subscription plan for a student.
             </p>

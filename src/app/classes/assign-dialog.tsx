@@ -1,7 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogHeader, DialogBody, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { ClassItem, Student } from "./types";
 
 interface AssignDialogProps {
@@ -37,7 +42,8 @@ export function AssignDialog({
       <DialogBody>
         {unenrolledStudents.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            All students are already enrolled in this class, or there are no students in the system yet.
+            All students are already enrolled in this class, or there are no
+            students in the system yet.
           </p>
         ) : (
           <div className="space-y-2">
@@ -51,8 +57,8 @@ export function AssignDialog({
                       errMsg
                         ? "bg-red-50 border-red-300"
                         : checked
-                        ? "bg-indigo-50 border-indigo-300"
-                        : "border-border hover:bg-muted/50"
+                          ? "bg-indigo-50 border-indigo-300"
+                          : "border-border hover:bg-muted/50"
                     }`}
                   >
                     <input
@@ -68,7 +74,9 @@ export function AssignDialog({
                       {student.name}
                     </span>
                   </label>
-                  {errMsg && <p className="text-xs text-red-600 pl-3">{errMsg}</p>}
+                  {errMsg && (
+                    <p className="text-xs text-red-600 pl-3">{errMsg}</p>
+                  )}
                 </div>
               );
             })}

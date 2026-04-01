@@ -22,17 +22,20 @@ export function SessionTracker({
 }: SessionTrackerProps) {
   const { totalSessions, sessions, status } = subscription;
   const used = sessions.length;
-  const remaining = totalSessions > 0 ? Math.max(0, totalSessions - used) : null;
+  const remaining =
+    totalSessions > 0 ? Math.max(0, totalSessions - used) : null;
   const isFull = totalSessions > 0 && used >= totalSessions;
   const canLog = status === "active" && !isFull;
-  const lastSession = sessions.length > 0 ? sessions[sessions.length - 1] : null;
+  const lastSession =
+    sessions.length > 0 ? sessions[sessions.length - 1] : null;
 
   // No session tracking configured
   if (totalSessions === 0) {
     return (
       <div className="mt-3 flex items-center gap-3">
         <span className="text-sm text-muted-foreground">
-          Sessions used: <span className="font-semibold text-foreground">{used}</span>
+          Sessions used:{" "}
+          <span className="font-semibold text-foreground">{used}</span>
         </span>
         {status === "active" && (
           <Button
@@ -67,14 +70,20 @@ export function SessionTracker({
       <div className="flex items-center justify-between text-xs">
         <span className="text-muted-foreground">
           Sessions:{" "}
-          <span className={`font-semibold ${isFull ? "text-red-600" : "text-foreground"}`}>
+          <span
+            className={`font-semibold ${isFull ? "text-red-600" : "text-foreground"}`}
+          >
             {used}
           </span>
           <span className="text-muted-foreground"> / {totalSessions}</span>
           {remaining !== null && !isFull && (
-            <span className="ml-1 text-muted-foreground">({remaining} left)</span>
+            <span className="ml-1 text-muted-foreground">
+              ({remaining} left)
+            </span>
           )}
-          {isFull && <span className="ml-1 text-red-600 font-medium"> · Full</span>}
+          {isFull && (
+            <span className="ml-1 text-red-600 font-medium"> · Full</span>
+          )}
         </span>
         <div className="flex items-center gap-2">
           {lastSession && (
@@ -134,7 +143,11 @@ export function SessionTracker({
           <div className="h-2.5 rounded-full bg-muted overflow-hidden">
             <div
               className={`h-full rounded-full transition-all ${
-                isFull ? "bg-red-500" : pct >= 80 ? "bg-amber-500" : "bg-indigo-500"
+                isFull
+                  ? "bg-red-500"
+                  : pct >= 80
+                    ? "bg-amber-500"
+                    : "bg-indigo-500"
               }`}
               style={{ width: `${pct}%` }}
             />

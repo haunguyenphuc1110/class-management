@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -11,7 +11,10 @@ export async function PATCH(
     const { status } = body;
 
     if (!status) {
-      return NextResponse.json({ error: "status is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "status is required" },
+        { status: 400 },
+      );
     }
 
     const subscription = await prisma.subscription.update({
@@ -23,6 +26,9 @@ export async function PATCH(
     return NextResponse.json(subscription);
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Failed to update subscription" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to update subscription" },
+      { status: 500 },
+    );
   }
 }

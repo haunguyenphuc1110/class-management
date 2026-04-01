@@ -49,7 +49,9 @@ export function SubscriptionForm({
                 <Select
                   id="substudent"
                   value={form.studentId}
-                  onChange={(e) => onChange({ ...form, studentId: e.target.value })}
+                  onChange={(e) =>
+                    onChange({ ...form, studentId: e.target.value })
+                  }
                   required
                 >
                   <option value="">Select student...</option>
@@ -81,7 +83,9 @@ export function SubscriptionForm({
                 id="substart"
                 type="date"
                 value={form.startDate}
-                onChange={(e) => onChange({ ...form, startDate: e.target.value })}
+                onChange={(e) =>
+                  onChange({ ...form, startDate: e.target.value })
+                }
                 required
               />
             </div>
@@ -111,7 +115,9 @@ export function SubscriptionForm({
             <div className="space-y-1.5">
               <Label htmlFor="subsessions">
                 Total Sessions
-                <span className="ml-1 text-xs text-muted-foreground">(0 = unlimited tracking)</span>
+                <span className="ml-1 text-xs text-muted-foreground">
+                  (0 = unlimited tracking)
+                </span>
               </Label>
               <Input
                 id="subsessions"
@@ -120,7 +126,9 @@ export function SubscriptionForm({
                 max="200"
                 placeholder="e.g. 8"
                 value={form.totalSessions}
-                onChange={(e) => onChange({ ...form, totalSessions: e.target.value })}
+                onChange={(e) =>
+                  onChange({ ...form, totalSessions: e.target.value })
+                }
               />
             </div>
             <div className="space-y-1.5 sm:col-span-2">

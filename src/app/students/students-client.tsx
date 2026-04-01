@@ -13,7 +13,10 @@ interface StudentsClientProps {
   parents: Parent[];
 }
 
-export function StudentsClient({ initialStudents, parents }: StudentsClientProps) {
+export function StudentsClient({
+  initialStudents,
+  parents,
+}: StudentsClientProps) {
   const router = useRouter();
   const [students, setStudents] = useState<Student[]>(initialStudents);
   const [showForm, setShowForm] = useState(false);
@@ -91,7 +94,11 @@ export function StudentsClient({ initialStudents, parents }: StudentsClientProps
           onClick={() => setShowForm(!showForm)}
           className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white border-0"
         >
-          {showForm ? <ChevronUp className="size-4" /> : <Plus className="size-4" />}
+          {showForm ? (
+            <ChevronUp className="size-4" />
+          ) : (
+            <Plus className="size-4" />
+          )}
           {showForm ? "Cancel" : "Add Student"}
         </Button>
       </div>
@@ -102,7 +109,10 @@ export function StudentsClient({ initialStudents, parents }: StudentsClientProps
           form={form}
           onChange={setForm}
           onSubmit={handleSubmit}
-          onCancel={() => { setShowForm(false); setError(""); }}
+          onCancel={() => {
+            setShowForm(false);
+            setError("");
+          }}
           parents={parents}
           loading={loading}
           error={error}

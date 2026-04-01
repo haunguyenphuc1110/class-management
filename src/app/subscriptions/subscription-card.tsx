@@ -25,7 +25,10 @@ export function SubscriptionCard({
   onLogSession,
   onUndoSession,
 }: SubscriptionCardProps) {
-  const statusConfig = STATUS_CONFIG[sub.status] ?? { label: sub.status, variant: "gray" as const };
+  const statusConfig = STATUS_CONFIG[sub.status] ?? {
+    label: sub.status,
+    variant: "gray" as const,
+  };
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -38,8 +41,12 @@ export function SubscriptionCard({
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-semibold text-foreground">{sub.student.name}</h3>
-                <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
+                <h3 className="font-semibold text-foreground">
+                  {sub.student.name}
+                </h3>
+                <Badge variant={statusConfig.variant}>
+                  {statusConfig.label}
+                </Badge>
                 <Badge variant="secondary">{sub.plan}</Badge>
               </div>
               <p className="text-sm text-muted-foreground mt-0.5">
@@ -56,7 +63,9 @@ export function SubscriptionCard({
                 </span>
               </div>
               {sub.notes && (
-                <p className="mt-1 text-xs text-muted-foreground italic">{sub.notes}</p>
+                <p className="mt-1 text-xs text-muted-foreground italic">
+                  {sub.notes}
+                </p>
               )}
 
               {/* Session tracker */}

@@ -10,26 +10,40 @@ export async function GET(request: Request) {
       where: studentId ? { studentId } : {},
       include: {
         student: { include: { parent: true } },
-        sessions: { orderBy: { date: "asc" }, select: { id: true, date: true, classId: true } },
+        sessions: {
+          orderBy: { date: "asc" },
+          select: { id: true, date: true, classId: true },
+        },
       },
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json(subscriptions);
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Failed to fetch subscriptions" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch subscriptions" },
+      { status: 500 },
+    );
   }
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { studentId, plan, startDate, endDate, amount, totalSessions, notes } = body;
+    const {
+      studentId,
+      plan,
+      startDate,
+      endDate,
+      amount,
+      totalSessions,
+      notes,
+    } = body;
 
     if (!studentId || !plan || !startDate || !endDate || amount === undefined) {
       return NextResponse.json(
         { error: "studentId, plan, startDate, endDate, amount are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -53,6 +67,9 @@ export async function POST(request: Request) {
     return NextResponse.json(subscription, { status: 201 });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Failed to create subscription" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create subscription" },
+      { status: 500 },
+    );
   }
 }

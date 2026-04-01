@@ -55,7 +55,9 @@ export function StudentForm({
                 <Select
                   id="parentId"
                   value={form.parentId}
-                  onChange={(e) => onChange({ ...form, parentId: e.target.value })}
+                  onChange={(e) =>
+                    onChange({ ...form, parentId: e.target.value })
+                  }
                   required
                 >
                   <option value="">Select a parent...</option>
@@ -73,7 +75,9 @@ export function StudentForm({
                 id="dob"
                 type="date"
                 value={form.dateOfBirth}
-                onChange={(e) => onChange({ ...form, dateOfBirth: e.target.value })}
+                onChange={(e) =>
+                  onChange({ ...form, dateOfBirth: e.target.value })
+                }
               />
             </div>
             <div className="space-y-1.5 sm:col-span-2">

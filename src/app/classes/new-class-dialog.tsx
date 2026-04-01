@@ -1,7 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogHeader, DialogBody, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -45,7 +50,9 @@ export function NewClassDialog({
                 id="cn"
                 placeholder="e.g. Math Beginners"
                 value={classForm.name}
-                onChange={(e) => onFormChange({ ...classForm, name: e.target.value })}
+                onChange={(e) =>
+                  onFormChange({ ...classForm, name: e.target.value })
+                }
                 required
               />
             </div>
@@ -55,7 +62,9 @@ export function NewClassDialog({
                 id="csubject"
                 placeholder="e.g. Mathematics"
                 value={classForm.subject}
-                onChange={(e) => onFormChange({ ...classForm, subject: e.target.value })}
+                onChange={(e) =>
+                  onFormChange({ ...classForm, subject: e.target.value })
+                }
               />
             </div>
             <div className="space-y-1.5">
@@ -68,7 +77,9 @@ export function NewClassDialog({
                 <Select
                   id="cteacher"
                   value={classForm.teacherId}
-                  onChange={(e) => onFormChange({ ...classForm, teacherId: e.target.value })}
+                  onChange={(e) =>
+                    onFormChange({ ...classForm, teacherId: e.target.value })
+                  }
                   required
                 >
                   <option value="">Select teacher...</option>
@@ -85,7 +96,9 @@ export function NewClassDialog({
               <Select
                 id="cday"
                 value={classForm.dayOfWeek}
-                onChange={(e) => onFormChange({ ...classForm, dayOfWeek: e.target.value })}
+                onChange={(e) =>
+                  onFormChange({ ...classForm, dayOfWeek: e.target.value })
+                }
               >
                 {DAYS.map((d) => (
                   <option key={d.value} value={d.value}>
@@ -100,7 +113,9 @@ export function NewClassDialog({
                 id="cstart"
                 type="time"
                 value={classForm.startTime}
-                onChange={(e) => onFormChange({ ...classForm, startTime: e.target.value })}
+                onChange={(e) =>
+                  onFormChange({ ...classForm, startTime: e.target.value })
+                }
                 required
               />
             </div>
@@ -110,7 +125,9 @@ export function NewClassDialog({
                 id="cend"
                 type="time"
                 value={classForm.endTime}
-                onChange={(e) => onFormChange({ ...classForm, endTime: e.target.value })}
+                onChange={(e) =>
+                  onFormChange({ ...classForm, endTime: e.target.value })
+                }
                 required
               />
             </div>
@@ -120,7 +137,9 @@ export function NewClassDialog({
                 id="croom"
                 placeholder="e.g. Room 101"
                 value={classForm.room}
-                onChange={(e) => onFormChange({ ...classForm, room: e.target.value })}
+                onChange={(e) =>
+                  onFormChange({ ...classForm, room: e.target.value })
+                }
               />
             </div>
             <div className="space-y-1.5">
@@ -131,7 +150,9 @@ export function NewClassDialog({
                 min="1"
                 max="100"
                 value={classForm.maxStudents}
-                onChange={(e) => onFormChange({ ...classForm, maxStudents: e.target.value })}
+                onChange={(e) =>
+                  onFormChange({ ...classForm, maxStudents: e.target.value })
+                }
               />
             </div>
             <div className="space-y-1.5">
@@ -140,7 +161,9 @@ export function NewClassDialog({
                 id="cstartdate"
                 type="date"
                 value={classForm.startDate}
-                onChange={(e) => onFormChange({ ...classForm, startDate: e.target.value })}
+                onChange={(e) =>
+                  onFormChange({ ...classForm, startDate: e.target.value })
+                }
               />
             </div>
             <div className="space-y-1.5">
@@ -150,7 +173,9 @@ export function NewClassDialog({
                 type="date"
                 value={classForm.endDate}
                 min={classForm.startDate || undefined}
-                onChange={(e) => onFormChange({ ...classForm, endDate: e.target.value })}
+                onChange={(e) =>
+                  onFormChange({ ...classForm, endDate: e.target.value })
+                }
               />
             </div>
             <div className="space-y-1.5 sm:col-span-2">
@@ -160,7 +185,9 @@ export function NewClassDialog({
                   <button
                     key={c.value}
                     type="button"
-                    onClick={() => onFormChange({ ...classForm, color: c.value })}
+                    onClick={() =>
+                      onFormChange({ ...classForm, color: c.value })
+                    }
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
                       classForm.color === c.value
                         ? `${c.bg} ${c.text} ${c.border} ring-2 ring-offset-1 ring-indigo-500`

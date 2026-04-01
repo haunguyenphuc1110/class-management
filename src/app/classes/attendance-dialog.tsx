@@ -1,7 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogHeader, DialogBody, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { ClassItem, AttendanceSubInfo } from "./types";
 import { DAY_LABELS, formatTime } from "./constants";
 
@@ -59,10 +64,10 @@ export function AttendanceDialog({
                       result === "ok"
                         ? "bg-emerald-50 border-emerald-300"
                         : result === "error" || result === "no-sub"
-                        ? "bg-red-50 border-red-200"
-                        : checked
-                        ? "bg-indigo-50 border-indigo-300"
-                        : "border-border hover:bg-muted/50"
+                          ? "bg-red-50 border-red-200"
+                          : checked
+                            ? "bg-indigo-50 border-indigo-300"
+                            : "border-border hover:bg-muted/50"
                     }`}
                   >
                     <input
@@ -76,25 +81,37 @@ export function AttendanceDialog({
                       {enr.student.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground">{enr.student.name}</p>
+                      <p className="text-sm font-medium text-foreground">
+                        {enr.student.name}
+                      </p>
                       {sub ? (
-                        <p className={`text-xs ${full ? "text-red-600" : "text-muted-foreground"}`}>
+                        <p
+                          className={`text-xs ${full ? "text-red-600" : "text-muted-foreground"}`}
+                        >
                           Sessions: {used}
                           {total > 0 ? ` / ${total}` : " used"}
                           {full && " · No sessions left"}
                         </p>
                       ) : (
-                        <p className="text-xs text-amber-600">No active subscription</p>
+                        <p className="text-xs text-amber-600">
+                          No active subscription
+                        </p>
                       )}
                     </div>
                     {result === "ok" && (
-                      <span className="text-xs text-emerald-600 font-medium shrink-0">✓ Marked</span>
+                      <span className="text-xs text-emerald-600 font-medium shrink-0">
+                        ✓ Marked
+                      </span>
                     )}
                     {result === "error" && (
-                      <span className="text-xs text-red-600 font-medium shrink-0">Failed</span>
+                      <span className="text-xs text-red-600 font-medium shrink-0">
+                        Failed
+                      </span>
                     )}
                     {result === "no-sub" && (
-                      <span className="text-xs text-amber-600 font-medium shrink-0">No subscription</span>
+                      <span className="text-xs text-amber-600 font-medium shrink-0">
+                        No subscription
+                      </span>
                     )}
                   </label>
                 </div>

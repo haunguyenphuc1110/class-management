@@ -19,7 +19,10 @@ export async function GET() {
     return NextResponse.json(students);
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Failed to fetch students" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch students" },
+      { status: 500 },
+    );
   }
 }
 
@@ -29,7 +32,10 @@ export async function POST(request: Request) {
     const { name, dateOfBirth, notes, parentId } = body;
 
     if (!name || !parentId) {
-      return NextResponse.json({ error: "Name and parentId are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Name and parentId are required" },
+        { status: 400 },
+      );
     }
 
     const student = await prisma.student.create({
@@ -49,6 +55,9 @@ export async function POST(request: Request) {
     return NextResponse.json(student, { status: 201 });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Failed to create student" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create student" },
+      { status: 500 },
+    );
   }
 }

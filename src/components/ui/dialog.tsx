@@ -39,7 +39,7 @@ function Dialog({ open, onClose, children, className }: DialogProps) {
       <div
         className={cn(
           "relative z-10 w-full max-w-lg mx-4 bg-card rounded-xl shadow-xl border border-border max-h-[90vh] overflow-y-auto",
-          className
+          className,
         )}
       >
         {children}
@@ -74,13 +74,27 @@ function DialogHeader({ title, description, onClose }: DialogHeaderProps) {
   );
 }
 
-function DialogBody({ children, className }: { children: React.ReactNode; className?: string }) {
+function DialogBody({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return <div className={cn("p-6", className)}>{children}</div>;
 }
 
-function DialogFooter({ children, className }: { children: React.ReactNode; className?: string }) {
+function DialogFooter({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <div className={cn("flex items-center justify-end gap-3 p-6 pt-0", className)}>
+    <div
+      className={cn("flex items-center justify-end gap-3 p-6 pt-0", className)}
+    >
       {children}
     </div>
   );

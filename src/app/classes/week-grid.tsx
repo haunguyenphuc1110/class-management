@@ -34,7 +34,11 @@ interface WeekGridProps {
   onNewClass: () => void;
 }
 
-export function WeekGrid({ classes, onSelectClass, onNewClass }: WeekGridProps) {
+export function WeekGrid({
+  classes,
+  onSelectClass,
+  onNewClass,
+}: WeekGridProps) {
   const classesByDay: Record<number, ClassItem[]> = {};
   WEEK_ORDER.forEach((d) => {
     classesByDay[d] = classes.filter((c) => c.dayOfWeek === d);
@@ -54,7 +58,9 @@ export function WeekGrid({ classes, onSelectClass, onNewClass }: WeekGridProps) 
             <div className="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center mb-4">
               <CalendarDays className="size-7 text-emerald-500" />
             </div>
-            <h3 className="font-semibold text-foreground mb-1">No classes yet</h3>
+            <h3 className="font-semibold text-foreground mb-1">
+              No classes yet
+            </h3>
             <p className="text-sm text-muted-foreground mb-4">
               Create your first class to see the weekly schedule.
             </p>
@@ -70,12 +76,18 @@ export function WeekGrid({ classes, onSelectClass, onNewClass }: WeekGridProps) 
             {/* Time axis */}
             <div className="w-14 shrink-0 border-r border-border">
               <div className="h-10 border-b border-border" />
-              <div className="relative" style={{ height: `${GRID_HEIGHT_PX}px` }}>
+              <div
+                className="relative"
+                style={{ height: `${GRID_HEIGHT_PX}px` }}
+              >
                 {HOUR_LABELS.map((label, i) => (
                   <div
                     key={label}
                     className="absolute right-2 text-xs text-muted-foreground leading-none"
-                    style={{ top: `${(i / TOTAL_HOURS) * 100}%`, transform: "translateY(-50%)" }}
+                    style={{
+                      top: `${(i / TOTAL_HOURS) * 100}%`,
+                      transform: "translateY(-50%)",
+                    }}
                   >
                     {label}
                   </div>
@@ -85,14 +97,20 @@ export function WeekGrid({ classes, onSelectClass, onNewClass }: WeekGridProps) 
 
             {/* Day columns */}
             {WEEK_ORDER.map((day) => (
-              <div key={day} className="flex-1 border-r border-border last:border-r-0 min-w-0">
+              <div
+                key={day}
+                className="flex-1 border-r border-border last:border-r-0 min-w-0"
+              >
                 <div className="h-10 flex items-center justify-center border-b border-border bg-muted/40 px-2">
                   <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                     {DAY_LABELS[day].slice(0, 3)}
                   </span>
                 </div>
 
-                <div className="relative" style={{ height: `${GRID_HEIGHT_PX}px` }}>
+                <div
+                  className="relative"
+                  style={{ height: `${GRID_HEIGHT_PX}px` }}
+                >
                   {/* Hour lines */}
                   {Array.from({ length: TOTAL_HOURS + 1 }, (_, i) => (
                     <div
@@ -106,7 +124,10 @@ export function WeekGrid({ classes, onSelectClass, onNewClass }: WeekGridProps) 
                   {classesByDay[day].map((cls) => {
                     const colorCls = getColorClasses(cls.color);
                     const expired = isExpired(cls.endDate);
-                    const full = isFull(cls.enrollments.length, cls.maxStudents);
+                    const full = isFull(
+                      cls.enrollments.length,
+                      cls.maxStudents,
+                    );
                     return (
                       <button
                         key={cls.id}
@@ -118,7 +139,9 @@ export function WeekGrid({ classes, onSelectClass, onNewClass }: WeekGridProps) 
                         }`}
                         style={getBlockStyle(cls)}
                       >
-                        <p className="text-xs font-semibold leading-tight truncate">{cls.name}</p>
+                        <p className="text-xs font-semibold leading-tight truncate">
+                          {cls.name}
+                        </p>
                         <p className="text-[10px] leading-tight opacity-75 truncate">
                           {formatTime(cls.startTime)}–{formatTime(cls.endTime)}
                         </p>
@@ -126,10 +149,14 @@ export function WeekGrid({ classes, onSelectClass, onNewClass }: WeekGridProps) 
                           {cls.teacher.name}
                         </p>
                         {expired && (
-                          <p className="text-[10px] font-semibold leading-tight text-gray-500">Expired</p>
+                          <p className="text-[10px] font-semibold leading-tight text-gray-500">
+                            Expired
+                          </p>
                         )}
                         {!expired && full && (
-                          <p className="text-[10px] font-semibold leading-tight">Full</p>
+                          <p className="text-[10px] font-semibold leading-tight">
+                            Full
+                          </p>
                         )}
                       </button>
                     );

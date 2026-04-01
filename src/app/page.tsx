@@ -1,15 +1,22 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, UserCheck, CalendarDays, CreditCard, ArrowRight } from "lucide-react";
+import {
+  Users,
+  UserCheck,
+  CalendarDays,
+  CreditCard,
+  ArrowRight,
+} from "lucide-react";
 
 async function getStats() {
-  const [totalParents, totalStudents, activeClasses, activeSubscriptions] = await Promise.all([
-    prisma.parent.count(),
-    prisma.student.count(),
-    prisma.class.count(),
-    prisma.subscription.count({ where: { status: "active" } }),
-  ]);
+  const [totalParents, totalStudents, activeClasses, activeSubscriptions] =
+    await Promise.all([
+      prisma.parent.count(),
+      prisma.student.count(),
+      prisma.class.count(),
+      prisma.subscription.count({ where: { status: "active" } }),
+    ]);
   return { totalParents, totalStudents, activeClasses, activeSubscriptions };
 }
 
@@ -102,8 +109,12 @@ export default async function DashboardPage() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-muted-foreground">{stat.label}</p>
-                      <p className="mt-1 text-3xl font-bold text-foreground">{stat.value}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {stat.label}
+                      </p>
+                      <p className="mt-1 text-3xl font-bold text-foreground">
+                        {stat.value}
+                      </p>
                     </div>
                     <div className={`${stat.bg} ${stat.color} p-3 rounded-xl`}>
                       <Icon className="size-6" />
@@ -128,12 +139,18 @@ export default async function DashboardPage() {
               <Card className="hover:shadow-md transition-all hover:-translate-y-0.5 cursor-pointer group">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4">
-                    <div className={`${link.color} text-white p-3 rounded-xl shadow-sm`}>
+                    <div
+                      className={`${link.color} text-white p-3 rounded-xl shadow-sm`}
+                    >
                       <Icon className="size-5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-foreground">{link.label}</p>
-                      <p className="text-sm text-muted-foreground truncate">{link.description}</p>
+                      <p className="font-semibold text-foreground">
+                        {link.label}
+                      </p>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {link.description}
+                      </p>
                     </div>
                     <ArrowRight className="size-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all shrink-0" />
                   </div>
