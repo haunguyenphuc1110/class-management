@@ -1,65 +1,148 @@
-import Image from "next/image";
+import Link from "next/link";
+import { prisma } from "@/lib/prisma";
+import { Card, CardContent } from "@/components/ui/card";
+import { Users, UserCheck, CalendarDays, CreditCard, ArrowRight } from "lucide-react";
 
-export default function Home() {
+async function getStats() {
+  const [totalParents, totalStudents, activeClasses, activeSubscriptions] = await Promise.all([
+    prisma.parent.count(),
+    prisma.student.count(),
+    prisma.class.count(),
+    prisma.subscription.count({ where: { status: "active" } }),
+  ]);
+  return { totalParents, totalStudents, activeClasses, activeSubscriptions };
+}
+
+export default async function DashboardPage() {
+  const stats = await getStats();
+
+  const statCards = [
+    {
+      label: "Total Students",
+      value: stats.totalStudents,
+      icon: UserCheck,
+      href: "/students",
+      color: "text-indigo-600",
+      bg: "bg-indigo-50",
+    },
+    {
+      label: "Total Parents",
+      value: stats.totalParents,
+      icon: Users,
+      href: "/parents",
+      color: "text-blue-600",
+      bg: "bg-blue-50",
+    },
+    {
+      label: "Active Classes",
+      value: stats.activeClasses,
+      icon: CalendarDays,
+      href: "/classes",
+      color: "text-emerald-600",
+      bg: "bg-emerald-50",
+    },
+    {
+      label: "Active Subscriptions",
+      value: stats.activeSubscriptions,
+      icon: CreditCard,
+      href: "/subscriptions",
+      color: "text-violet-600",
+      bg: "bg-violet-50",
+    },
+  ];
+
+  const quickLinks = [
+    {
+      href: "/parents",
+      label: "Manage Parents",
+      description: "Add and view parent profiles",
+      icon: Users,
+      color: "bg-blue-600",
+    },
+    {
+      href: "/students",
+      label: "Manage Students",
+      description: "Enroll and track students",
+      icon: UserCheck,
+      color: "bg-indigo-600",
+    },
+    {
+      href: "/classes",
+      label: "Class Schedule",
+      description: "Weekly schedule and enrollment",
+      icon: CalendarDays,
+      color: "bg-emerald-600",
+    },
+    {
+      href: "/subscriptions",
+      label: "Subscriptions",
+      description: "Manage student plans",
+      icon: CreditCard,
+      color: "bg-violet-600",
+    },
+  ];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="flex-1 p-6 lg:p-8">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+        <p className="mt-1 text-muted-foreground">
+          Welcome back! Here&apos;s an overview of your class management system.
+        </p>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+        {statCards.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <Link key={stat.href} href={stat.href}>
+              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">{stat.label}</p>
+                      <p className="mt-1 text-3xl font-bold text-foreground">{stat.value}</p>
+                    </div>
+                    <div className={`${stat.bg} ${stat.color} p-3 rounded-xl`}>
+                      <Icon className="size-6" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          );
+        })}
+      </div>
+
+      {/* Quick Links */}
+      <div className="mb-4">
+        <h2 className="text-lg font-semibold text-foreground">Quick Actions</h2>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {quickLinks.map((link) => {
+          const Icon = link.icon;
+          return (
+            <Link key={link.href} href={link.href}>
+              <Card className="hover:shadow-md transition-all hover:-translate-y-0.5 cursor-pointer group">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className={`${link.color} text-white p-3 rounded-xl shadow-sm`}>
+                      <Icon className="size-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-foreground">{link.label}</p>
+                      <p className="text-sm text-muted-foreground truncate">{link.description}</p>
+                    </div>
+                    <ArrowRight className="size-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all shrink-0" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }
